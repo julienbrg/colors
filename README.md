@@ -16,6 +16,20 @@ forge install
 
 ## Deploy
 
+Run: 
+
+```
+anvil
+```
+
+Create a `.env` on the model of `.env.template`:
+
+```bash
+cp .env.template .env
+```
+
+Use a private key from one of the available accounts in anvil, then: 
+
 ```bash
 # Local development
 forge script script/DeployColors.s.sol --fork-url http://localhost:8545 --broadcast
