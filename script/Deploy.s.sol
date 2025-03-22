@@ -23,10 +23,7 @@ contract AlphaImplementation is Alpha {
         return _getPixelInternal(frameData, x, y, getIndexAtPosition);
     }
 
-    function getPixelRGB(
-        uint8 x,
-        uint8 y
-    ) public view override returns (uint24) {
+    function getPixelRGB(uint8 x, uint8 y) public view override returns (uint24) {
         uint8 colorIndex = getPixel(x, y);
         return getColorFromIndex(colorIndex);
     }
