@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 /// @title Colors - A contract for storing and manipulating RGB colors
 /// @notice This contract allows storing, retrieving, and manipulating RGB colors in an efficient packed uint24 format
 /// @dev Colors are stored as packed uint24 values where R, G, B components occupy 8 bits each
-contract Colors {
+abstract contract Colors {
     /// @notice Map of named custom colors added by users
     /// @dev Maps string names to packed uint24 color values
     mapping(string => uint24) public customColors;
