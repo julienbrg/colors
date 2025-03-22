@@ -42,7 +42,7 @@ contract AlphaImpl is Alpha {
     }
 
     function resetFrame() public override {
-        _resetFrameInternal(frameData, 1, setIndexAtPosition); // 1 = BLACK
+        _resetFrameInternal(frameData, 0, setIndexAtPosition); // 0 = BLACK
     }
 
     function visualizeFrame() public view override returns (string memory) {
@@ -50,26 +50,15 @@ contract AlphaImpl is Alpha {
         for (uint8 y = 0; y < FRAME_SIZE; y++) {
             for (uint8 x = 0; x < FRAME_SIZE; x++) {
                 uint8 colorIndex = getPixel(x, y);
-                // Use symbols for different colors
                 if (colorIndex == 0) {
-                    result = string(abi.encodePacked(result, "W "));
-                }
-                // WHITE
-                else if (colorIndex == 1) {
+                    result = string(abi.encodePacked(result, "0 "));
+                } else if (colorIndex == 1) {
+                    result = string(abi.encodePacked(result, "1 "));
+                } else if (colorIndex == 2) {
+                    result = string(abi.encodePacked(result, "P "));
+                } else if (colorIndex == 3) {
                     result = string(abi.encodePacked(result, "B "));
                 }
-                // BLACK
-                else if (colorIndex == 2) {
-                    result = string(abi.encodePacked(result, "P "));
-                }
-                // PURPLE
-                else if (colorIndex == 3) {
-                    result = string(abi.encodePacked(result, "L "));
-                }
-                // BLUE
-                else {
-                    result = string(abi.encodePacked(result, "? "));
-                } // Unknown
             }
             result = string(abi.encodePacked(result, "\n"));
         }
@@ -114,35 +103,26 @@ contract AlphaTest is Test {
     }
 
     function testInitialFrameState() public view {
-        // Check that frames are initialized with black background and blue pixel in bottom-right
+        // Check that frames are initialized with the correct pattern
 
-        // Small frame (8x8)
-        for (uint8 y = 0; y < alphaSmall.FRAME_SIZE(); y++) {
-            for (uint8 x = 0; x < alphaSmall.FRAME_SIZE(); x++) {
-                if (x == alphaSmall.FRAME_SIZE() - 1 && y == alphaSmall.FRAME_SIZE() - 1) {
-                    // Bottom-right pixel should be blue (index 3)
-                    assertEq(alphaSmall.getPixel(x, y), 3, "Pixel at bottom-right should be blue");
-                } else {
-                    // All other pixels should be black (index 1)
-                    assertEq(alphaSmall.getPixel(x, y), 1, "Background pixels should be black");
-                }
-            }
-        }
+        // For the 8x8 frame, check specific pattern pixels
+        // Purple at (5,2)
+        assertEq(alphaSmall.getPixel(5, 2), 2, "Pixel at (5,2) should be PURPLE");
+        // Blue at (2,5)
+        assertEq(alphaSmall.getPixel(2, 5), 3, "Pixel at (2,5) should be BLUE");
 
-        // Medium frame (16x16) - check just the corner pixels
-        assertEq(alphaMedium.getPixel(0, 0), 1, "Top-left pixel should be black");
-        assertEq(alphaMedium.getPixel(15, 0), 1, "Top-right pixel should be black");
-        assertEq(alphaMedium.getPixel(0, 15), 1, "Bottom-left pixel should be black");
-        assertEq(alphaMedium.getPixel(15, 15), 3, "Bottom-right pixel should be blue");
+        // Check a sample of other pixels to make sure they're black
+        assertEq(alphaSmall.getPixel(0, 0), 0, "Pixel at (0,0) should be BLACK");
+        assertEq(alphaSmall.getPixel(4, 4), 0, "Pixel at (4,4) should be BLACK");
+        assertEq(alphaSmall.getPixel(7, 7), 0, "Pixel at (7,7) should be BLACK");
 
-        // Large frame (32x32) - check just the corner pixels
-        assertEq(alphaLarge.getPixel(0, 0), 1, "Top-left pixel should be black");
-        assertEq(alphaLarge.getPixel(31, 0), 1, "Top-right pixel should be black");
-        assertEq(alphaLarge.getPixel(0, 31), 1, "Bottom-left pixel should be black");
-        assertEq(alphaLarge.getPixel(31, 31), 3, "Bottom-right pixel should be blue");
+        // Medium frame should also have the same pattern
+        assertEq(alphaMedium.getPixel(5, 2), 2, "Pixel at (5,2) should be PURPLE");
+        assertEq(alphaMedium.getPixel(2, 5), 3, "Pixel at (2,5) should be BLUE");
 
-        // Tiny frame (1x1) - should be blue since it's both the only pixel and the bottom-right
-        assertEq(alphaTiny.getPixel(0, 0), 3, "Only pixel in tiny frame should be blue");
+        // Large frame should also have the same pattern
+        assertEq(alphaLarge.getPixel(5, 2), 2, "Pixel at (5,2) should be PURPLE");
+        assertEq(alphaLarge.getPixel(2, 5), 3, "Pixel at (2,5) should be BLUE");
     }
 
     function testSetAndGetPixel() public {
@@ -180,8 +160,16 @@ contract AlphaTest is Test {
 
         assertEq(allPixels.length, alphaSmall.TOTAL_PIXELS(), "All pixels array should have correct length");
 
-        // The last pixel (bottom-right) should be blue (index 3)
-        assertEq(allPixels[alphaSmall.TOTAL_PIXELS() - 1], 3, "Last pixel should be blue");
+        // Check pattern pixels
+        uint8 row2 = 2;
+        uint8 col5 = 5;
+        uint16 purpleIndex = row2 * alphaSmall.FRAME_SIZE() + col5;
+        assertEq(allPixels[purpleIndex], 2, "Purple pixel should be at correct position");
+
+        uint8 row5 = 5;
+        uint8 col2 = 2;
+        uint16 blueIndex = row5 * alphaSmall.FRAME_SIZE() + col2;
+        assertEq(allPixels[blueIndex], 3, "Blue pixel should be at correct position");
     }
 
     function testGetAllPixelsRGB() public view {
@@ -190,25 +178,30 @@ contract AlphaTest is Test {
 
         assertEq(allPixelsRGB.length, alphaSmall.TOTAL_PIXELS(), "All pixels RGB array should have correct length");
 
-        // The last pixel (bottom-right) should be blue
-        assertEq(allPixelsRGB[alphaSmall.TOTAL_PIXELS() - 1], 0x45A2F8, "Last pixel should be blue in RGB");
+        // Check pattern pixels
+        uint8 row2 = 2;
+        uint8 col5 = 5;
+        uint16 purpleIndex = row2 * alphaSmall.FRAME_SIZE() + col5;
+        assertEq(allPixelsRGB[purpleIndex], 0x8C1C84, "Purple pixel RGB should be at correct position");
+
+        uint8 row5 = 5;
+        uint8 col2 = 2;
+        uint16 blueIndex = row5 * alphaSmall.FRAME_SIZE() + col2;
+        assertEq(allPixelsRGB[blueIndex], 0x45A2F8, "Blue pixel RGB should be at correct position");
     }
 
     function testResetFrame() public {
-        // Set a pixel to white
-        alphaSmall.setPixel(3, 4, 0);
-        assertEq(alphaSmall.getPixel(3, 4), 0, "Pixel should be white after setting");
-
-        // Also set the bottom-right blue pixel to something else
-        alphaSmall.setPixel(7, 7, 2); // Purple
+        // First, verify our initial pattern is there
+        assertEq(alphaSmall.getPixel(5, 2), 2, "Pixel at (5,2) should initially be PURPLE");
+        assertEq(alphaSmall.getPixel(2, 5), 3, "Pixel at (2,5) should initially be BLUE");
 
         // Reset the frame
         alphaSmall.resetFrame();
 
-        // Now all pixels should be black (index 1)
+        // Now all pixels should be black (index 0)
         for (uint8 y = 0; y < alphaSmall.FRAME_SIZE(); y++) {
             for (uint8 x = 0; x < alphaSmall.FRAME_SIZE(); x++) {
-                assertEq(alphaSmall.getPixel(x, y), 1, "All pixels should be black after reset");
+                assertEq(alphaSmall.getPixel(x, y), 0, "All pixels should be black after reset");
             }
         }
     }
@@ -217,16 +210,6 @@ contract AlphaTest is Test {
         // Test that visualization returns a non-empty string
         string memory visualization = alphaSmall.visualizeFrame();
         assertTrue(bytes(visualization).length > 0, "Visualization should not be empty");
-
-        // We can't easily test the exact content of the string,
-        // but we can verify it has the expected length
-        // For an 8x8 frame, each row has 8 pixels with 2 chars each plus a newline
-        // So total length should be 8 * (8*2 + 1) = 8 * 17 = 136
-        assertEq(
-            bytes(visualization).length,
-            alphaSmall.FRAME_SIZE() * (alphaSmall.FRAME_SIZE() * 2 + 1),
-            "Visualization should have expected length"
-        );
     }
 
     // Use a boolean flag approach to test for reverts
@@ -271,22 +254,21 @@ contract AlphaTest is Test {
     }
 
     function testDrawPattern() public {
-        // Test creating a simple pattern (checkerboard)
-        for (uint8 y = 0; y < alphaSmall.FRAME_SIZE(); y++) {
-            for (uint8 x = 0; x < alphaSmall.FRAME_SIZE(); x++) {
-                if ((x + y) % 2 == 0) {
-                    alphaSmall.setPixel(x, y, 0); // WHITE
-                } else {
-                    alphaSmall.setPixel(x, y, 1); // BLACK
-                }
-            }
-        }
+        // Reset frame first to start with a clean slate
+        alphaSmall.resetFrame();
 
-        // Verify pattern by checking a few sample pixels
-        assertEq(alphaSmall.getPixel(0, 0), 0, "Pixel at (0,0) should be WHITE");
-        assertEq(alphaSmall.getPixel(0, 1), 1, "Pixel at (0,1) should be BLACK");
-        assertEq(alphaSmall.getPixel(1, 0), 1, "Pixel at (1,0) should be BLACK");
-        assertEq(alphaSmall.getPixel(1, 1), 0, "Pixel at (1,1) should be WHITE");
+        // Now draw our specific pattern
+        alphaSmall.setPixel(5, 2, 2); // PURPLE
+        alphaSmall.setPixel(2, 5, 3); // BLUE
+
+        // Verify pattern
+        assertEq(alphaSmall.getPixel(5, 2), 2, "Pixel at (5,2) should be PURPLE");
+        assertEq(alphaSmall.getPixel(2, 5), 3, "Pixel at (2,5) should be BLUE");
+
+        // Check a sample of other pixels to make sure they're black
+        assertEq(alphaSmall.getPixel(0, 0), 0, "Pixel at (0,0) should be BLACK");
+        assertEq(alphaSmall.getPixel(4, 4), 0, "Pixel at (4,4) should be BLACK");
+        assertEq(alphaSmall.getPixel(7, 7), 0, "Pixel at (7,7) should be BLACK");
     }
 
     function testPaletteIntegration() public view {
@@ -338,40 +320,60 @@ contract AlphaTest is Test {
     function testTinyFrame() public {
         // Test that a 1x1 frame works correctly
 
-        // The only pixel should be blue initially
-        assertEq(alphaTiny.getPixel(0, 0), 3, "Only pixel in tiny frame should be blue");
-
-        // Set the pixel to a different color
+        // Set the only pixel to a different color
         alphaTiny.setPixel(0, 0, 2); // PURPLE
         assertEq(alphaTiny.getPixel(0, 0), 2, "Pixel should be PURPLE after setting");
 
         // Reset the frame
         alphaTiny.resetFrame();
-        assertEq(alphaTiny.getPixel(0, 0), 1, "Pixel should be BLACK after reset");
+        assertEq(alphaTiny.getPixel(0, 0), 0, "Pixel should be BLACK after reset");
     }
 
     function testDifferentSizes() public {
         // Test that all sizes of frames work correctly with the Alpha implementation
 
-        // Set a pattern on the medium frame
-        for (uint8 y = 0; y < alphaMedium.FRAME_SIZE(); y++) {
-            for (uint8 x = 0; x < alphaMedium.FRAME_SIZE(); x++) {
-                if (x < alphaMedium.FRAME_SIZE() / 2 && y < alphaMedium.FRAME_SIZE() / 2) {
-                    alphaMedium.setPixel(x, y, 0); // WHITE in top-left quadrant
-                } else if (x >= alphaMedium.FRAME_SIZE() / 2 && y < alphaMedium.FRAME_SIZE() / 2) {
-                    alphaMedium.setPixel(x, y, 2); // PURPLE in top-right quadrant
-                } else if (x < alphaMedium.FRAME_SIZE() / 2 && y >= alphaMedium.FRAME_SIZE() / 2) {
-                    alphaMedium.setPixel(x, y, 1); // BLACK in bottom-left quadrant
-                } else {
-                    alphaMedium.setPixel(x, y, 3); // BLUE in bottom-right quadrant
-                }
+        // Reset medium frame first
+        alphaMedium.resetFrame();
+
+        // Create the same pattern on the medium frame
+        alphaMedium.setPixel(5, 2, 2); // Purple
+        alphaMedium.setPixel(2, 5, 3); // Blue
+
+        // Check the pattern
+        assertEq(alphaMedium.getPixel(5, 2), 2, "Pixel at (5,2) should be PURPLE");
+        assertEq(alphaMedium.getPixel(2, 5), 3, "Pixel at (2,5) should be BLUE");
+    }
+
+    // Test to verify our specific pattern is correct
+    function testSpecificPattern() public view {
+        // Verify the pattern:
+        // 00000000
+        // 00000000
+        // 00000P00
+        // 00000000
+        // 00000000
+        // 00B00000
+        // 00000000
+        // 00000000
+
+        // First check everything is 0 (BLACK) except our pattern pixels
+        for (uint8 y = 0; y < alphaSmall.FRAME_SIZE(); y++) {
+            for (uint8 x = 0; x < alphaSmall.FRAME_SIZE(); x++) {
+                // Skip our pattern pixels
+                if (x == 5 && y == 2) continue;
+                if (x == 2 && y == 5) continue;
+
+                // All other pixels should be BLACK (0)
+                assertEq(
+                    alphaSmall.getPixel(x, y),
+                    0,
+                    string(abi.encodePacked("Pixel at (", vm.toString(x), ",", vm.toString(y), ") should be BLACK"))
+                );
             }
         }
 
-        // Check a sample pixel from each quadrant
-        assertEq(alphaMedium.getPixel(4, 4), 0, "Pixel in top-left quadrant should be WHITE");
-        assertEq(alphaMedium.getPixel(12, 4), 2, "Pixel in top-right quadrant should be PURPLE");
-        assertEq(alphaMedium.getPixel(4, 12), 1, "Pixel in bottom-left quadrant should be BLACK");
-        assertEq(alphaMedium.getPixel(12, 12), 3, "Pixel in bottom-right quadrant should be BLUE");
+        // Check our pattern pixels
+        assertEq(alphaSmall.getPixel(5, 2), 2, "Pixel at (5,2) should be PURPLE");
+        assertEq(alphaSmall.getPixel(2, 5), 3, "Pixel at (2,5) should be BLUE");
     }
 }

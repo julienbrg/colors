@@ -59,10 +59,10 @@ Use a private key from one of the available accounts in anvil, then in another t
 
 ```bash
 # Local development
-forge script script/DeployColors.s.sol --fork-url http://localhost:8545 --broadcast
+forge script script/Deploy.s.sol --tc Deploy --fork-url http://localhost:8545 --broadcast
 
 # Testnet/Mainnet
-forge script script/DeployColors.s.sol --rpc-url <YOUR_RPC_URL> --private-key <YOUR_PRIVATE_KEY> --broadcast
+forge script script/Deploy.s.sol --tc Deploy --rpc-url <YOUR_RPC_URL> --private-key <YOUR_PRIVATE_KEY> --broadcast
 ```
 
 ## Usage Examples

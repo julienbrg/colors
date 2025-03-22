@@ -2,7 +2,6 @@
 pragma solidity ^0.8.0;
 
 import "forge-std/Script.sol";
-import "../src/Colors.sol";
 import "../src/Alpha.sol";
 
 // Create a concrete implementation of the abstract Alpha contract for deployment
@@ -24,7 +23,10 @@ contract AlphaImplementation is Alpha {
         return _getPixelInternal(frameData, x, y, getIndexAtPosition);
     }
 
-    function getPixelRGB(uint8 x, uint8 y) public view override returns (uint24) {
+    function getPixelRGB(
+        uint8 x,
+        uint8 y
+    ) public view override returns (uint24) {
         uint8 colorIndex = getPixel(x, y);
         return getColorFromIndex(colorIndex);
     }
@@ -43,7 +45,7 @@ contract AlphaImplementation is Alpha {
     }
 
     function resetFrame() public override {
-        _resetFrameInternal(frameData, 1, setIndexAtPosition); // 1 = BLACK
+        _resetFrameInternal(frameData, 0, setIndexAtPosition); // 0 = BLACK
     }
 
     function visualizeFrame() public view override returns (string memory) {
@@ -51,26 +53,15 @@ contract AlphaImplementation is Alpha {
         for (uint8 y = 0; y < FRAME_SIZE; y++) {
             for (uint8 x = 0; x < FRAME_SIZE; x++) {
                 uint8 colorIndex = getPixel(x, y);
-                // Use symbols for different colors
                 if (colorIndex == 0) {
-                    result = string(abi.encodePacked(result, "W "));
+                    result = string(abi.encodePacked(result, "0"));
+                } else if (colorIndex == 1) {
+                    result = string(abi.encodePacked(result, "1"));
+                } else if (colorIndex == 2) {
+                    result = string(abi.encodePacked(result, "P"));
+                } else if (colorIndex == 3) {
+                    result = string(abi.encodePacked(result, "B"));
                 }
-                // WHITE
-                else if (colorIndex == 1) {
-                    result = string(abi.encodePacked(result, "B "));
-                }
-                // BLACK
-                else if (colorIndex == 2) {
-                    result = string(abi.encodePacked(result, "P "));
-                }
-                // PURPLE
-                else if (colorIndex == 3) {
-                    result = string(abi.encodePacked(result, "L "));
-                }
-                // BLUE
-                else {
-                    result = string(abi.encodePacked(result, "? "));
-                } // Unknown
             }
             result = string(abi.encodePacked(result, "\n"));
         }
@@ -78,31 +69,29 @@ contract AlphaImplementation is Alpha {
     }
 }
 
-// Create a concrete implementation of the abstract Colors contract
-contract ColorsImplementation is Colors {
-// This is now a fully implemented contract that inherits all functionality
-// from the abstract Colors contract
-}
-
-contract DeployColors is Script {
+contract Deploy is Script {
     function run() external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
 
         vm.startBroadcast(deployerPrivateKey);
 
-        // Deploy the base Colors contract
-        ColorsImplementation colorsContract = new ColorsImplementation();
+        // Deploy Alpha implementation with 8x8 frame
+        AlphaImplementation alpha = new AlphaImplementation(8);
 
-        // Deploy Alpha implementations with different frame sizes
-        AlphaImplementation alphaSmall = new AlphaImplementation(8); // 8x8 frame
-        AlphaImplementation alphaMedium = new AlphaImplementation(16); // 16x16 frame
-        AlphaImplementation alphaLarge = new AlphaImplementation(32); // 32x32 frame
+        // Reset frame to all 0 (BLACK)
+        alpha.resetFrame();
 
-        // Log deployment addresses
-        console.log("Colors contract deployed at:", address(colorsContract));
-        console.log("Alpha (8x8) contract deployed at:", address(alphaSmall));
-        console.log("Alpha (16x16) contract deployed at:", address(alphaMedium));
-        console.log("Alpha (32x32) contract deployed at:", address(alphaLarge));
+        // Purple (P) at position (5, 2)
+        alpha.setPixel(5, 2, 2);
+
+        // Blue (B) at position (2, 5)
+        alpha.setPixel(2, 5, 3);
+
+        // Log the visual representation
+        console.log("Frame visualization:");
+        console.log(alpha.visualizeFrame());
+
+        console.log("Alpha contract deployed at:", address(alpha));
 
         vm.stopBroadcast();
     }
