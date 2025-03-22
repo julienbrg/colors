@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity ^0.8.0;
+pragma solidity 0.8.28;
 
 /// @title Colors - A contract for storing and manipulating RGB colors
 /// @notice This contract allows storing, retrieving, and manipulating RGB colors in an efficient packed uint24 format
 /// @dev Colors are stored as packed uint24 values where R, G, B components occupy 8 bits each
-contract Colors {
+abstract contract Colors {
     /// @notice Map of named custom colors added by users
     /// @dev Maps string names to packed uint24 color values
     mapping(string => uint24) public customColors;
@@ -19,7 +19,7 @@ contract Colors {
     /// @param red The red component (0-255)
     /// @param green The green component (0-255)
     /// @param blue The blue component (0-255)
-    function addCustomColor(string memory name, uint8 red, uint8 green, uint8 blue) public {
+    function addCustomColor(string memory name, uint8 red, uint8 green, uint8 blue) public virtual {
         uint24 packedColor = packColor(red, green, blue);
         customColors[name] = packedColor;
         emit CustomColorAdded(name, packedColor);
