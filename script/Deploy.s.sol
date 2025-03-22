@@ -7,6 +7,9 @@ import "../src/Alpha.sol";
 
 // Create a concrete implementation of the abstract Alpha contract for deployment
 contract AlphaImplementation is Alpha {
+    // Constructor with frame size parameter
+    constructor(uint8 frameSize) Alpha(frameSize) {}
+
     // Implement required functions from Frame interface
     function setPixel(uint8 x, uint8 y, uint8 colorIndex) public override {
         _setPixelInternal(frameData, x, y, colorIndex, setIndexAtPosition);
@@ -21,10 +24,7 @@ contract AlphaImplementation is Alpha {
         return _getPixelInternal(frameData, x, y, getIndexAtPosition);
     }
 
-    function getPixelRGB(
-        uint8 x,
-        uint8 y
-    ) public view override returns (uint24) {
+    function getPixelRGB(uint8 x, uint8 y) public view override returns (uint24) {
         uint8 colorIndex = getPixel(x, y);
         return getColorFromIndex(colorIndex);
     }
@@ -80,8 +80,8 @@ contract AlphaImplementation is Alpha {
 
 // Create a concrete implementation of the abstract Colors contract
 contract ColorsImplementation is Colors {
-    // This is now a fully implemented contract that inherits all functionality
-    // from the abstract Colors contract
+// This is now a fully implemented contract that inherits all functionality
+// from the abstract Colors contract
 }
 
 contract DeployColors is Script {
@@ -93,13 +93,16 @@ contract DeployColors is Script {
         // Deploy the base Colors contract
         ColorsImplementation colorsContract = new ColorsImplementation();
 
-        // Deploy the Alpha implementation contract
-        AlphaImplementation AlphaContract = new AlphaImplementation();
+        // Deploy Alpha implementations with different frame sizes
+        AlphaImplementation alphaSmall = new AlphaImplementation(8); // 8x8 frame
+        AlphaImplementation alphaMedium = new AlphaImplementation(16); // 16x16 frame
+        AlphaImplementation alphaLarge = new AlphaImplementation(32); // 32x32 frame
 
         // Log deployment addresses
         console.log("Colors contract deployed at:", address(colorsContract));
-
-        console.log("Alpha contract deployed at:", address(AlphaContract));
+        console.log("Alpha (8x8) contract deployed at:", address(alphaSmall));
+        console.log("Alpha (16x16) contract deployed at:", address(alphaMedium));
+        console.log("Alpha (32x32) contract deployed at:", address(alphaLarge));
 
         vm.stopBroadcast();
     }
