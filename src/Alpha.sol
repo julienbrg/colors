@@ -1,18 +1,19 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity ^0.8.0;
+pragma solidity 0.8.28;
 
 import "./Frame.sol";
 import "./Palette.sol";
 
 /// @title Alpha - An 8x8 frame implementation using the color palette
-/// @notice This contract provides an 8x8 frame with black background and a blue pixel
+/// @notice This contract provides a frame with black background and a blue pixel at the bottom right
 /// @dev Inherits from both Frame and Palette separately
 abstract contract Alpha is Frame, Palette {
     /// @notice The actual frame data storage, packed with 4 pixels per byte
     bytes public frameData;
 
     /// @notice Constructor initializes the frame with black background and one blue pixel
-    constructor() {
+    /// @param frameSize The size of the frame
+    constructor(uint8 frameSize) Frame(frameSize) {
         // Initialize storage with the right size
         frameData = new bytes(TOTAL_BYTES);
 
@@ -27,8 +28,10 @@ abstract contract Alpha is Frame, Palette {
             frameData[i] = bytes1(allBlack);
         }
 
-        // Set one blue pixel at position (7,7)
-        _setPixelInternal(frameData, 7, 7, 3, setIndexAtPosition);
+        // Set one blue pixel at the bottom-right corner
+        if (frameSize > 0) {
+            _setPixelInternal(frameData, frameSize - 1, frameSize - 1, 3, setIndexAtPosition); // 3 = BLUE
+        }
 
         emit FrameReset();
     }

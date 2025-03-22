@@ -1,21 +1,21 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity ^0.8.0;
+pragma solidity 0.8.28;
 
 /// @title Frame - A base contract for pixel frame implementations
 /// @notice This contract provides core functionality for managing pixel frames
 /// @dev Independent base contract for frame manipulation (doesn't inherit from Palette)
 abstract contract Frame {
     /// @notice Size of the frame (width and height in pixels)
-    uint8 public constant FRAME_SIZE = 8;
+    uint8 public immutable FRAME_SIZE;
 
     /// @notice Total number of pixels in the frame
-    uint16 public constant TOTAL_PIXELS = FRAME_SIZE * FRAME_SIZE;
+    uint16 public immutable TOTAL_PIXELS;
 
     /// @notice Number of pixels that can be stored in one byte (4 pixels per byte)
     uint8 public constant PIXELS_PER_BYTE = 4;
 
     /// @notice Total number of bytes needed to store the entire frame
-    uint16 public constant TOTAL_BYTES = (TOTAL_PIXELS + PIXELS_PER_BYTE - 1) / PIXELS_PER_BYTE;
+    uint16 public immutable TOTAL_BYTES;
 
     /// @notice Emitted when a pixel is updated
     /// @param x The x-coordinate
@@ -25,6 +25,14 @@ abstract contract Frame {
 
     /// @notice Emitted when the frame is reset
     event FrameReset();
+
+    /// @notice Constructor to set the frame size
+    /// @param frameSize The size of the frame (width and height in pixels)
+    constructor(uint8 frameSize) {
+        FRAME_SIZE = frameSize;
+        TOTAL_PIXELS = uint16(frameSize) * uint16(frameSize);
+        TOTAL_BYTES = (TOTAL_PIXELS + PIXELS_PER_BYTE - 1) / PIXELS_PER_BYTE;
+    }
 
     /// @notice Set a pixel at the specified coordinates to a palette color index
     /// @param frameData The frame data to modify
