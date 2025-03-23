@@ -17,18 +17,10 @@ contract SetPixel is Script {
         uint8 colorIndex = uint8(vm.envUint("COLOR_INDEX"));
 
         // Color index validation
-        require(
-            colorIndex < 4,
-            "Invalid color index. Use: 0=WHITE, 1=BLACK, 2=PURPLE, 3=BLUE"
-        );
+        require(colorIndex < 4, "Invalid color index. Use: 0=WHITE, 1=BLACK, 2=PURPLE, 3=BLUE");
 
         // Print the action we're taking
-        console.log(
-            "Setting pixel at position (%d, %d) to color index %d",
-            x,
-            y,
-            colorIndex
-        );
+        console.log("Setting pixel at position (%d, %d) to color index %d", x, y, colorIndex);
 
         // Color name for user feedback
         string memory colorName;
@@ -54,9 +46,7 @@ contract SetPixel is Script {
         } catch Error(string memory reason) {
             console.log("Error setting pixel: %s", reason);
         } catch {
-            console.log(
-                "Unknown error setting pixel. The contract might be completed or not initialized."
-            );
+            console.log("Unknown error setting pixel. The contract might be completed or not initialized.");
         }
 
         // Try to visualize the frame after change

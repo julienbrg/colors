@@ -8,17 +8,12 @@ contract GenerateSVG is Script {
     function run() external {
         // Check if contract address was provided, otherwise deploy a new one
         address alphaAddress;
-        bytes memory contractAddressBytes = vm.envOr(
-            "CONTRACT_ADDRESS",
-            bytes("")
-        );
+        bytes memory contractAddressBytes = vm.envOr("CONTRACT_ADDRESS", bytes(""));
         if (contractAddressBytes.length > 0) {
             alphaAddress = vm.envAddress("CONTRACT_ADDRESS");
             console.log("Using existing Alpha contract at:", alphaAddress);
         } else {
-            console.log(
-                "No CONTRACT_ADDRESS provided, deploying a new Alpha contract..."
-            );
+            console.log("No CONTRACT_ADDRESS provided, deploying a new Alpha contract...");
             uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
             vm.startBroadcast(deployerPrivateKey);
 
@@ -60,9 +55,7 @@ contract GenerateSVG is Script {
         string memory svg = alpha.viewSVG();
 
         // Create output directory - note that this requires the --ffi flag
-        console.log(
-            "Note: If this fails with an FFI error, run the command with --ffi flag"
-        );
+        console.log("Note: If this fails with an FFI error, run the command with --ffi flag");
         console.log("Or create the directory manually: mkdir -p output");
 
         string[] memory mkdirCmd = new string[](3);
@@ -86,15 +79,11 @@ contract GenerateSVG is Script {
         console.log("Timestamp:", timestamp);
 
         // Use a very simple fixed filename
-        string memory filename = string(
-            abi.encodePacked(shortAddr, "-", vm.toString(timestamp), ".svg")
-        );
+        string memory filename = string(abi.encodePacked(shortAddr, "-", vm.toString(timestamp), ".svg"));
 
         console.log("Generated filename:", filename);
 
-        string memory outputPath = string(
-            abi.encodePacked("output/", filename)
-        );
+        string memory outputPath = string(abi.encodePacked("output/", filename));
 
         console.log("Full output path:", outputPath);
 
@@ -127,11 +116,7 @@ contract GenerateSVG is Script {
         return string(buffer);
     }
 
-    function substring(
-        string memory str,
-        uint256 startIndex,
-        uint256 endIndex
-    ) internal pure returns (string memory) {
+    function substring(string memory str, uint256 startIndex, uint256 endIndex) internal pure returns (string memory) {
         bytes memory strBytes = bytes(str);
         require(startIndex < strBytes.length, "Start index out of bounds");
         require(endIndex <= strBytes.length, "End index out of bounds");
