@@ -13,6 +13,7 @@ As Luke Weaver pointed out in [this post](https://x.com/ethereum/status/18980771
 - **Frame Management**: 8x8 pixel frame system for compact on-chain art
 - **Pixel Manipulation**: Set/get pixels using either palette indices or RGB values
 - **Composability**: Abstract contract design for extensibility and reuse
+- **SVG Export**: Generate SVG representation of frames for web display
 
 ## Architecture
 
@@ -45,7 +46,7 @@ The tests cover all aspects of color manipulation, palette management, and frame
 
 Run: 
 
-```
+```bash
 anvil
 ```
 
@@ -64,6 +65,24 @@ forge script script/Deploy.s.sol --tc Deploy --fork-url http://localhost:8545 --
 # Testnet/Mainnet
 forge script script/Deploy.s.sol --tc Deploy --rpc-url <YOUR_RPC_URL> --private-key <YOUR_PRIVATE_KEY> --broadcast
 ```
+
+## Generate SVG Output
+
+To generate an SVG representation of a frame from an existing contract:
+
+1. Run the SVG generation script:
+
+```bash
+# If using an existing contract address
+export CONTRACT_ADDRESS=0x5FbDB2315678afecb367f032d93F642f64180aa3
+forge script script/GenerateSVG.s.sol --rpc-url http://localhost:8545 --ffi
+
+# Or to deploy a new contract with a default pattern
+export PRIVATE_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
+forge script script/GenerateSVG.s.sol --rpc-url http://localhost:8545 --ffi
+```
+
+2. Find your generated SVG in the `output/` directory with a filename in the format `0xContractAddress-Timestamp.svg`. This file can be opened in any web browser.
 
 ## Usage Examples
 
@@ -99,6 +118,40 @@ uint24 rgb = AlphaContract.getPixelRGB(3, 4); // Returns 0x8C1C84 (purple)
 
 // Get a visualization of the frame
 string memory visual = AlphaContract.visualizeFrame();
+
+// Generate an SVG representation
+string memory svg = AlphaContract.viewSVG();
+```
+
+### Batch Pixel Operations
+
+```solidity
+// Create arrays for batch setting pixels
+uint8[] memory xCoords = new uint8[](3);
+uint8[] memory yCoords = new uint8[](3);
+uint8[] memory colorIndices = new uint8[](3);
+
+// Define pattern coordinates and colors
+xCoords[0] = 1; yCoords[0] = 1; colorIndices[0] = 0; // WHITE
+xCoords[1] = 2; yCoords[1] = 2; colorIndices[1] = 2; // PURPLE
+xCoords[2] = 3; yCoords[2] = 3; colorIndices[2] = 3; // BLUE
+
+// Set all pixels in one transaction
+AlphaContract.batchSetPixel(xCoords, yCoords, colorIndices);
+```
+
+### Use the `SetPixel.s.sol` script
+
+```bash
+# Set all required environment variables
+export CONTRACT_ADDRESS=0x5FbDB2315678afecb367f032d93F642f64180aa3
+export PRIVATE_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
+export PIXEL_X=3
+export PIXEL_Y=4
+export COLOR_INDEX=2
+
+# Run the script
+forge script script/SetPixel.s.sol --rpc-url http://localhost:8545 --broadcast
 ```
 
 ## Gas Efficiency

@@ -76,13 +76,16 @@ contract FrameImpl is Frame {
         for (uint256 i = 0; i < indices.length; i++) {
             if (indices[i] == 0) {
                 colors[i] = 0xFFFFFF;
-            } // White
+            }
+            // White
             else if (indices[i] == 1) {
                 colors[i] = 0x000000;
-            } // Black
+            }
+            // Black
             else if (indices[i] == 2) {
                 colors[i] = 0xFF00FF;
-            } // Pink
+            }
+            // Pink
             else {
                 colors[i] = 0x0000FF;
             } // Blue
@@ -102,13 +105,16 @@ contract FrameImpl is Frame {
                 uint8 index = getPixel(x, y);
                 if (index == 0) {
                     result = string(abi.encodePacked(result, "W "));
-                } // White
+                }
+                // White
                 else if (index == 1) {
                     result = string(abi.encodePacked(result, "B "));
-                } // Black
+                }
+                // Black
                 else if (index == 2) {
                     result = string(abi.encodePacked(result, "P "));
-                } // Pink
+                }
+                // Pink
                 else {
                     result = string(abi.encodePacked(result, "L "));
                 } // Blue
