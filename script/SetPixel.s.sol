@@ -17,18 +17,12 @@ contract SetPixel is Script {
         } catch {
             // Default Anvil first account private key
             deployerPrivateKey = 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80;
-            console.log(
-                "No PRIVATE_KEY found in .env, using default Anvil first account private key"
-            );
+            console.log("No PRIVATE_KEY found in .env, using default Anvil first account private key");
         }
         vm.startBroadcast(deployerPrivateKey);
 
-        string memory json = vm.readFile(
-            "broadcast/Deploy.s.sol/31337/run-latest.json"
-        );
-        address alphaAddress = json.readAddress(
-            ".transactions[0].contractAddress"
-        );
+        string memory json = vm.readFile("broadcast/Deploy.s.sol/31337/run-latest.json");
+        address alphaAddress = json.readAddress(".transactions[0].contractAddress");
 
         require(alphaAddress != address(0), "Alpha contract address not found");
 

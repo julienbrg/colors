@@ -14,9 +14,7 @@ contract Deploy is Script {
         } catch {
             // Default Anvil first account private key
             deployerPrivateKey = 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80;
-            console.log(
-                "No PRIVATE_KEY found in .env, using default Anvil first account private key"
-            );
+            console.log("No PRIVATE_KEY found in .env, using default Anvil first account private key");
         }
 
         vm.startBroadcast(deployerPrivateKey);

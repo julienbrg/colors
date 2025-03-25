@@ -17,19 +17,13 @@ contract GenerateSVG is Script {
         } catch {
             // Default Anvil first account private key
             deployerPrivateKey = 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80;
-            console.log(
-                "No PRIVATE_KEY found in .env, using default Anvil first account private key"
-            );
+            console.log("No PRIVATE_KEY found in .env, using default Anvil first account private key");
         }
         vm.startBroadcast(deployerPrivateKey);
 
-        string memory json = vm.readFile(
-            "broadcast/Deploy.s.sol/31337/run-latest.json"
-        );
+        string memory json = vm.readFile("broadcast/Deploy.s.sol/31337/run-latest.json");
 
-        address alphaAddress = json.readAddress(
-            ".transactions[0].contractAddress"
-        );
+        address alphaAddress = json.readAddress(".transactions[0].contractAddress");
 
         require(alphaAddress != address(0), "Alpha contract address not found");
 
@@ -50,13 +44,9 @@ contract GenerateSVG is Script {
 
         console.log("Contract address:", alphaAddress);
 
-        string memory filename = string(
-            abi.encodePacked(shortAddr, "-", vm.toString(timestamp), ".svg")
-        );
+        string memory filename = string(abi.encodePacked(shortAddr, "-", vm.toString(timestamp), ".svg"));
 
-        string memory outputPath = string(
-            abi.encodePacked("output/", filename)
-        );
+        string memory outputPath = string(abi.encodePacked("output/", filename));
 
         vm.writeFile(outputPath, svg);
         console.log("SVG saved to:", outputPath);
@@ -68,23 +58,13 @@ contract GenerateSVG is Script {
         buffer[1] = "x";
         for (uint256 i = 0; i < 20; i++) {
             bytes1 b = bytes1(uint8(uint160(addr) / (2 ** (8 * (19 - i)))));
-            buffer[2 + i * 2] = bytes1(
-                uint8(b) / 16 >= 10 ? uint8(b) / 16 + 87 : uint8(b) / 16 + 48
-            );
-            buffer[3 + i * 2] = bytes1(
-                uint8(b) % 16 >= 10
-                    ? (uint8(b) % 16) + 87
-                    : (uint8(b) % 16) + 48
-            );
+            buffer[2 + i * 2] = bytes1(uint8(b) / 16 >= 10 ? uint8(b) / 16 + 87 : uint8(b) / 16 + 48);
+            buffer[3 + i * 2] = bytes1(uint8(b) % 16 >= 10 ? (uint8(b) % 16) + 87 : (uint8(b) % 16) + 48);
         }
         return string(buffer);
     }
 
-    function substring(
-        string memory str,
-        uint256 startIndex,
-        uint256 endIndex
-    ) internal pure returns (string memory) {
+    function substring(string memory str, uint256 startIndex, uint256 endIndex) internal pure returns (string memory) {
         bytes memory strBytes = bytes(str);
         require(startIndex < strBytes.length, "Start index out of bounds");
         require(endIndex <= strBytes.length, "End index out of bounds");
