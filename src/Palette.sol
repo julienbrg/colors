@@ -134,4 +134,15 @@ abstract contract Palette is Colors {
 
         return colors;
     }
+
+    /// @notice Convert a byte to hex string
+    function toHexString(uint8 value) public pure returns (string memory) {
+        bytes memory hexChars = "0123456789ABCDEF";
+        bytes memory result = new bytes(2);
+
+        result[0] = hexChars[uint8(value) >> 4];
+        result[1] = hexChars[uint8(value) & 0x0f];
+
+        return string(result);
+    }
 }
