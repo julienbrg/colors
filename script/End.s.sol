@@ -9,14 +9,28 @@ contract End is Script {
     using stdJson for string;
 
     function run() external {
-        // Retrieve the private key from environment
-        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
+        uint256 deployerPrivateKey;
+
+        // Try to get private key from .env, use Anvil's first account as fallback
+        try vm.envUint("PRIVATE_KEY") returns (uint256 key) {
+            deployerPrivateKey = key;
+        } catch {
+            // Default Anvil first account private key
+            deployerPrivateKey = 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80;
+            console.log(
+                "No PRIVATE_KEY found in .env, using default Anvil first account private key"
+            );
+        }
 
         // Read the latest deployment JSON to get the contract address
-        string memory json = vm.readFile("broadcast/Deploy.s.sol/31337/run-latest.json");
+        string memory json = vm.readFile(
+            "broadcast/Deploy.s.sol/31337/run-latest.json"
+        );
 
         // Read the contract address from the JSON
-        address alphaAddress = json.readAddress(".transactions[0].contractAddress");
+        address alphaAddress = json.readAddress(
+            ".transactions[0].contractAddress"
+        );
 
         require(alphaAddress != address(0), "Alpha contract address not found");
 

@@ -4,7 +4,7 @@ A minimalist on-chain art framework for creating pixel art on Ethereum.
 
 ## Motivation
 
-As Luke Weaver pointed out, "the mediums that define their age bring about radical new ways of seeing". This project explores on-chain pixel art by using an efficient, gas-optimized approach to storing and rendering 8x8 pixel graphics.
+As Luke Weaver [pointed out](https://x.com/ethereum/status/1898077135916437718), "the mediums that define their age bring about radical new ways of seeing". This project explores on-chain pixel art by using an efficient, gas-optimized approach to storing and rendering 8x8 pixel graphics.
 
 ## Features
 
@@ -31,14 +31,6 @@ As Luke Weaver pointed out, "the mediums that define their age bring about radic
 - **Immutability Option**: 
   - Ability to "complete" artwork, preventing further modifications
 
-## Technical Highlights
-
-- Solidity 0.8.28
-- Bit-level manipulation for storage efficiency
-- Custom color packing and unpacking
-- Event-driven pixel updates
-- Flexible pixel setting methods
-
 ## Install
 
 ```bash
@@ -50,22 +42,22 @@ forge install
 ## Test
 
 ```bash
-forge test -vv
+forge test
 ```
 
 ## Deploy
 
-1. Start a local blockchain:
+1. Start a local network:
 ```bash
 anvil
 ```
 
-2. Create a `.env` file:
+2. Create a `.env` file (you can skip this part if you just want to test):
 ```bash
 cp .env.template .env
 ```
 
-3. Deploy the contract:
+1. In a new terminal, deploy the contract:
 ```bash
 # Local development
 forge script script/Deploy.s.sol --tc Deploy --fork-url http://localhost:8545 --broadcast
