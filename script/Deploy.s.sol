@@ -6,44 +6,20 @@ import "../src/Alpha.sol";
 
 contract Deploy is Script {
     function run() external {
-        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
+        uint256 deployerPrivateKey;
+
+        // Try to get private key from .env, use Anvil's first account as fallback
+        try vm.envUint("PRIVATE_KEY") returns (uint256 key) {
+            deployerPrivateKey = key;
+        } catch {
+            // Default Anvil first account private key
+            deployerPrivateKey = 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80;
+            console.log("No PRIVATE_KEY found in .env, using default Anvil first account private key");
+        }
 
         vm.startBroadcast(deployerPrivateKey);
 
-        // Deploy Alpha contract with 8x8 frame
         Alpha alpha = new Alpha(8);
-
-        // Initialize the frame (fills with black)
-        alpha.init();
-
-        // Create a pattern using batch set
-        uint8[] memory xCoords = new uint8[](2);
-        uint8[] memory yCoords = new uint8[](2);
-        uint8[] memory colorIndices = new uint8[](2);
-
-        // Purple (P) at position (5, 2)
-        xCoords[0] = 5;
-        yCoords[0] = 2;
-        colorIndices[0] = 2; // PURPLE
-
-        // Blue (B) at position (2, 5)
-        xCoords[1] = 2;
-        yCoords[1] = 5;
-        colorIndices[1] = 3; // BLUE
-
-        // Set the pattern
-        alpha.batchSetPixel(xCoords, yCoords, colorIndices);
-
-        // Log the visual representation
-        console.log("Frame visualization:");
-        console.log(alpha.visualizeFrame());
-
-        // Generate SVG
-        console.log("SVG representation:");
-        console.log(alpha.viewSVG());
-
-        // Mark the artwork as complete
-        alpha.end();
 
         console.log("Alpha contract deployed at:", address(alpha));
 

@@ -8,8 +8,7 @@ contract AlphaTest is Test {
     Alpha public alpha;
 
     // Events for testing
-    event FrameInitialized();
-    event ArtworkCompleted();
+    event Completed();
     event PixelUpdated(uint8 x, uint8 y, uint8 colorIndex);
     event PixelsBatchUpdated(uint256 count);
 
@@ -17,53 +16,26 @@ contract AlphaTest is Test {
         alpha = new Alpha(8); // 8x8 frame
     }
 
-    function testInitialization() public {
-        // Before initialization
-        assertEq(alpha.isInitialized(), false);
-        assertEq(alpha.isComplete(), false);
-
-        // Initialize frame
-        vm.expectEmit(true, true, true, true);
-        emit FrameInitialized();
-        alpha.init();
-
-        // After initialization
-        assertEq(alpha.isInitialized(), true);
-
-        // Check all pixels are black
-        for (uint8 y = 0; y < alpha.FRAME_SIZE(); y++) {
-            for (uint8 x = 0; x < alpha.FRAME_SIZE(); x++) {
-                assertEq(alpha.getPixel(x, y), 1, "All pixels should be BLACK after init");
-            }
-        }
-    }
-
-    function testCannotInitializeTwice() public {
-        alpha.init();
-        vm.expectRevert("Frame already initialized");
-        alpha.init();
-    }
-
-    function testSetPixelRequiresInitialization() public {
-        // Should revert before initialization
-        vm.expectRevert("Frame not initialized");
-        alpha.setPixel(0, 0, 2);
-    }
-
     function testSetPixel() public {
-        alpha.init();
+        // First, we need to get the SVG before setting any pixels to compare later
+        string memory originalSvg = alpha.viewSVG();
 
         // Set a pixel
         alpha.setPixel(3, 4, 2); // PURPLE
-        assertEq(alpha.getPixel(3, 4), 2, "Pixel should be PURPLE after setting");
 
-        // All other pixels should still be BLACK
-        assertEq(alpha.getPixel(0, 0), 1, "Pixel at (0,0) should still be BLACK");
+        // Since we don't have a direct getPixel method, we'll verify the change through the SVG
+        string memory updatedSvg = alpha.viewSVG();
+
+        // Verify the SVGs are different after setting a pixel
+        assertTrue(
+            keccak256(bytes(originalSvg)) != keccak256(bytes(updatedSvg)), "SVG should change after setting a pixel"
+        );
+
+        // Verify the SVG contains the PURPLE color (hex code #8C1C84)
+        assertTrue(contains(updatedSvg, "#8C1C84"), "SVG should contain PURPLE color after setting a pixel");
     }
 
     function testBatchSetPixel() public {
-        alpha.init();
-
         // Create pixel batch data
         uint8[] memory xCoords = new uint8[](3);
         uint8[] memory yCoords = new uint8[](3);
@@ -86,15 +58,14 @@ contract AlphaTest is Test {
         emit PixelsBatchUpdated(3);
         alpha.batchSetPixel(xCoords, yCoords, colorIndices);
 
-        // Verify pixels were set
-        assertEq(alpha.getPixel(1, 1), 0, "Pixel at (1,1) should be WHITE");
-        assertEq(alpha.getPixel(2, 2), 2, "Pixel at (2,2) should be PURPLE");
-        assertEq(alpha.getPixel(3, 3), 3, "Pixel at (3,3) should be BLUE");
+        // Verify pixels were set by checking the SVG contains all expected colors
+        string memory svg = alpha.viewSVG();
+        assertTrue(contains(svg, "#FFFFFF"), "SVG should contain WHITE color");
+        assertTrue(contains(svg, "#8C1C84"), "SVG should contain PURPLE color");
+        assertTrue(contains(svg, "#45A2F8"), "SVG should contain BLUE color");
     }
 
     function testBatchSetPixelInputValidation() public {
-        alpha.init();
-
         // Different array lengths should revert
         uint8[] memory xCoords = new uint8[](3);
         uint8[] memory yCoords = new uint8[](2);
@@ -105,15 +76,9 @@ contract AlphaTest is Test {
     }
 
     function testEndArtwork() public {
-        // Should revert before initialization
-        vm.expectRevert("Frame not initialized");
-        alpha.end();
-
-        alpha.init();
-
         // End artwork
         vm.expectEmit(true, true, true, true);
-        emit ArtworkCompleted();
+        emit Completed();
         alpha.end();
 
         assertEq(alpha.isComplete(), true);
@@ -131,7 +96,6 @@ contract AlphaTest is Test {
     }
 
     function testCannotEndTwice() public {
-        alpha.init();
         alpha.end();
 
         vm.expectRevert("Artwork already complete");
@@ -139,12 +103,6 @@ contract AlphaTest is Test {
     }
 
     function testViewSVG() public {
-        // Should revert before initialization
-        vm.expectRevert("Frame not initialized");
-        alpha.viewSVG();
-
-        alpha.init();
-
         // Set some pixels
         alpha.setPixel(1, 1, 0); // WHITE
         alpha.setPixel(2, 2, 2); // PURPLE
@@ -168,7 +126,6 @@ contract AlphaTest is Test {
     }
 
     function testViewAfterCompletion() public {
-        alpha.init();
         alpha.end();
 
         // Should still be able to view after completion

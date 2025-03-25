@@ -1,63 +1,63 @@
 # Colors
 
-A minimalist on-chain art framework.
+A minimalist on-chain art framework for creating pixel art on Ethereum.
 
 ## Motivation
 
-As Luke Weaver pointed out in [this post](https://x.com/ethereum/status/1898077135916437718), "the mediums that define their age bring about radical new ways of seeing". In this set of Solidity contracts, we use a packed uint24 representation, matching web hexadecimal format, to minimize gas costs while maintaining full RGB color support.
+As Luke Weaver [pointed out](https://x.com/ethereum/status/1898077135916437718), "the mediums that define their age bring about radical new ways of seeing". This project explores on-chain pixel art by using an efficient, gas-optimized approach to storing and rendering 8x8 pixel graphics.
 
 ## Features
 
-- **Efficient Color Storage**: Uses uint24 to pack RGB values (8 bits per channel)
-- **Palette System**: Pre-defined 4-color palette that only requires 2 bits per pixel
-- **Frame Management**: 8x8 pixel frame system for compact on-chain art
-- **Pixel Manipulation**: Set/get pixels using either palette indices or RGB values
-- **Composability**: Abstract contract design for extensibility and reuse
-- **SVG Export**: Generate SVG representation of frames for web display
+- **Efficient Color Storage**: 
+  - Uses a packed `uint24` representation matching web hexadecimal format
+  - Minimizes gas costs while maintaining full RGB color support
+  - 8 bits per color channel (red, green, blue)
 
-## Architecture
+- **Palette System**: 
+  - Predefined 4-color palette 
+  - Uses only 2 bits per pixel for compact storage
+  - Supported colors: White, Black, Purple, Blue
 
-The project consists of several key components:
+- **Frame Management**: 
+  - 8x8 pixel frame system
+  - Efficient bit-packed storage
+  - Supports individual and batch pixel manipulation
 
-- **Colors.sol**: Base contract for RGB color manipulation and storage
-- **Palette.sol**: 4-color palette system with efficient 2-bit index storage
-- **Frame.sol**: 8x8 pixel frame management with packed storage
-- **Alpha.sol**: Implementation combining colors, palette, and frame for a complete solution
+- **SVG Generation**: 
+  - On-chain SVG rendering
+  - Easy visualization of pixel art
+  - Viewable directly from the blockchain
+
+- **Immutability Option**: 
+  - Ability to "complete" artwork, preventing further modifications
 
 ## Install
 
 ```bash
-git clone https://github.com/yourusername/colors.git
+git clone https://github.com/julienbrg/colors.git
 cd colors
 forge install
 ```
 
 ## Test
 
-Run the test suite to verify functionality:
-
 ```bash
-forge test -vv
+forge test
 ```
-
-The tests cover all aspects of color manipulation, palette management, and frame operations.
 
 ## Deploy
 
-Run: 
-
+1. Start a local network:
 ```bash
 anvil
 ```
 
-Create a `.env` on the model of `.env.template`:
-
+2. Create a `.env` file (you can skip this part if you just want to test):
 ```bash
 cp .env.template .env
 ```
 
-Use a private key from one of the available accounts in anvil, then in another terminal: 
-
+1. In a new terminal, deploy the contract:
 ```bash
 # Local development
 forge script script/Deploy.s.sol --tc Deploy --fork-url http://localhost:8545 --broadcast
@@ -66,102 +66,92 @@ forge script script/Deploy.s.sol --tc Deploy --fork-url http://localhost:8545 --
 forge script script/Deploy.s.sol --tc Deploy --rpc-url <YOUR_RPC_URL> --private-key <YOUR_PRIVATE_KEY> --broadcast
 ```
 
-## Generate SVG Output
+## Example Usage
 
-To generate an SVG representation of a frame from an existing contract:
+### Setting Pixels
 
-1. Run the SVG generation script:
+```solidity
+// Set individual pixels
+alpha.setPixel(3, 4, 2); // Sets pixel at (3,4) to Purple
+
+// Batch set multiple pixels
+uint8[] memory xCoords = new uint8[](2);
+uint8[] memory yCoords = new uint8[](2);
+uint8[] memory colorIndices = new uint8[](2);
+// Configure coordinates and colors...
+alpha.batchSetPixel(xCoords, yCoords, colorIndices);
+```
+
+Run: 
 
 ```bash
-# If using an existing contract address
-export CONTRACT_ADDRESS=0x5FbDB2315678afecb367f032d93F642f64180aa3
-forge script script/GenerateSVG.s.sol --rpc-url http://localhost:8545 --ffi
-
-# Or to deploy a new contract with a default pattern
-export PRIVATE_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
-forge script script/GenerateSVG.s.sol --rpc-url http://localhost:8545 --ffi
-```
-
-2. Find your generated SVG in the `output/` directory with a filename in the format `0xContractAddress-Timestamp.svg`. This file can be opened in any web browser.
-
-## Usage Examples
-
-### Basic Color Management
-
-```solidity
-// Create a packed RGB color
-uint24 orange = colorsContract.packColor(255, 165, 0); // 0xFFA500
-
-// Extract components
-uint8 red = colorsContract.unpackRed(orange); // 255
-uint8 green = colorsContract.unpackGreen(orange); // 165
-uint8 blue = colorsContract.unpackBlue(orange); // 0
-
-// Store custom colors
-colorsContract.addCustomColor("SUNSET_ORANGE", 255, 99, 71);
-```
-
-### Using the Palette and Frame
-
-```solidity
-// Set a pixel in the frame using a palette index
-AlphaContract.setPixel(3, 4, 2); // Set to purple (index 2)
-
-// Set a pixel using RGB (auto-maps to closest palette color)
-AlphaContract.setPixelRGB(5, 6, 0xFFFFFF); // Set to white
-
-// Get a pixel's palette index
-uint8 colorIndex = AlphaContract.getPixel(3, 4); // Returns 2 (purple)
-
-// Get a pixel's RGB value
-uint24 rgb = AlphaContract.getPixelRGB(3, 4); // Returns 0x8C1C84 (purple)
-
-// Get a visualization of the frame
-string memory visual = AlphaContract.visualizeFrame();
-
-// Generate an SVG representation
-string memory svg = AlphaContract.viewSVG();
-```
-
-### Batch Pixel Operations
-
-```solidity
-// Create arrays for batch setting pixels
-uint8[] memory xCoords = new uint8[](3);
-uint8[] memory yCoords = new uint8[](3);
-uint8[] memory colorIndices = new uint8[](3);
-
-// Define pattern coordinates and colors
-xCoords[0] = 1; yCoords[0] = 1; colorIndices[0] = 0; // WHITE
-xCoords[1] = 2; yCoords[1] = 2; colorIndices[1] = 2; // PURPLE
-xCoords[2] = 3; yCoords[2] = 3; colorIndices[2] = 3; // BLUE
-
-// Set all pixels in one transaction
-AlphaContract.batchSetPixel(xCoords, yCoords, colorIndices);
-```
-
-### Use the `SetPixel.s.sol` script
-
-```bash
-# Set all required environment variables
-export CONTRACT_ADDRESS=0x5FbDB2315678afecb367f032d93F642f64180aa3
-export PRIVATE_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
-export PIXEL_X=3
-export PIXEL_Y=4
-export COLOR_INDEX=2
-
-# Run the script
 forge script script/SetPixel.s.sol --rpc-url http://localhost:8545 --broadcast
+```
+
+### Generating SVG
+
+```solidity
+// Generate an SVG representation of the current frame
+string memory svg = alpha.viewSVG();
+```
+
+Run: 
+
+```bash
+forge script script/GenerateSVG.s.sol --rpc-url http://localhost:8545 --ffi --broadcast
+```
+
+### Completing Artwork
+
+```solidity
+// Mark the artwork as complete (no further modifications allowed)
+alpha.end();
+```
+
+Run: 
+
+```bash
+forge script script/End.s.sol --rpc-url http://localhost:8545 --broadcast
+```
+
+## Integration
+
+Get all colors from the palette: 
+
+```ts
+const paletteSize = await alphaContract.PALETTE_SIZE();
+const size = paletteSize.toNumber();
+    
+const availableColors: string[] = [];
+    
+for (let i = 0; i < size; i++) {
+  const colorValue = await alphaContract.getColorFromIndex(i);
+  const hexValue = colorValue.toHexString().replace(/^0x/, '');
+  const paddedHex = hexValue.padStart(6, '0');
+  const hexColor = `#${paddedHex}`;
+  availableColors.push(hexColor);
+}
+```
+
+Get the frame size: 
+
+```ts
+const frameSize = await alphaContract.FRAME_SIZE();
 ```
 
 ## Gas Efficiency
 
-The contract is optimized for gas efficiency with:
+- Packed color storage
+- 2-bit palette indices
+- Minimal storage operations
 
-- Packed storage representation of colors
-- 2-bit palette indices for common colors
-- Multiple pixels packed into single storage slots
-- Minimal storage operations for frame manipulations
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## License
+
+GPL-3.0-or-later
 
 ## Support
 
