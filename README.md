@@ -114,6 +114,31 @@ Run:
 forge script script/End.s.sol --rpc-url http://localhost:8545 --broadcast
 ```
 
+## Integration
+
+Get all colors from the palette: 
+
+```ts
+const paletteSize = await alphaContract.PALETTE_SIZE();
+const size = paletteSize.toNumber();
+    
+const availableColors: string[] = [];
+    
+for (let i = 0; i < size; i++) {
+  const colorValue = await alphaContract.getColorFromIndex(i);
+  const hexValue = colorValue.toHexString().replace(/^0x/, '');
+  const paddedHex = hexValue.padStart(6, '0');
+  const hexColor = `#${paddedHex}`;
+  availableColors.push(hexColor);
+}
+```
+
+Get the frame size: 
+
+```ts
+const frameSize = await alphaContract.FRAME_SIZE();
+```
+
 ## Gas Efficiency
 
 - Packed color storage
